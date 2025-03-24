@@ -1,0 +1,47 @@
+{
+	"name": "uni-app-template",
+	"version": "1.0.0",
+	"description": "基于vue3的基础模板",
+	"main": "main.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/Dream-Xi-Studio/uni-app-template.git"
+	},
+	"author": "PedroQue99",
+	"license": "ISC",
+	"bugs": {
+		"url": "https://github.com/Dream-Xi-Studio/uni-app-template/issues"
+	},
+	"homepage": "https://github.com/Dream-Xi-Studio/uni-app-template#readme",
+	"uni-app": {
+		"scripts": {
+			"mp-weixin-dev": {
+				"title": "微信小程序—开发环境",
+				"env": {
+					"ENV_TYPE": "dev",
+					"UNI_PLATFORM": "mp-weixin",
+					"VUE_APP_BASE_URL": ""
+				}
+			},
+			"mp-weixin-prod": {
+				"title": "微信小程序—生产环境",
+				"env": {
+					"ENV_TYPE": "prod",
+					"UNI_PLATFORM": "mp-weixin",
+					"VUE_APP_BASE_URL": ""
+				}
+			}
+		}
+	},
+	"dependencies": {
+		"dayjs": "^1.11.13",
+		"lodash": "^4.17.21"
+	},
+	"devDependencies": {
+		"@types/lodash": "^4.17.16",
+		"pinia-plugin-persistedstate": "^4.2.0"
+	}
+}
