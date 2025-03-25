@@ -1,7 +1,7 @@
 /**
  * 跳转 URL 选项，可以是字符串、对象或函数。
  */
-export type ToUrlOptions = string | {
+export type RouterOptions = string | {
   /**
    * 跳转类型，取值范围 1~5
    * - `1` - 跳转 TabBar 页面

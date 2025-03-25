@@ -1,25 +1,25 @@
-import { toUrl } from './toUrl'
-import { TipsOptions, ToUrlOptions } from '@/types/index'
+import { Router } from '@/utils/index'
+import { ToastOptions, RouterOptions } from '@/types/index'
 
 /**
- * 显示一个提示消息，并根据配置进行页面跳转。
+ * 显示一个提示消息，并根据配置进行页面跳转
  *
- * @param {TipsOptions} opt - 提示的配置或提示文本。
- * @param {ToUrlOptions} [to_url] - 页面跳转配置或跳转目标，或一个回调函数。
+ * @param {ToastOptions} opt - 提示的配置或提示文本
+ * @param {RouterOptions} [router] - 页面跳转配置或跳转目标，或一个回调函数
  *
  * @example
  * // 显示一个成功的提示
- * Tips({ title: '操作成功', icon: 'success' });
+ * Toast({ title: '操作成功', icon: 'success' });
  *
  * @example
  * // 提示后跳转到 TabBar 页面
- * Tips({ title: '跳转中...' }, { tab: 1, url: '/pages/index/index' });
+ * Toast({ title: '跳转中...' }, { tab: 1, url: '/pages/index/index' });
  *
  * @example
  * // 提示后执行回调
- * Tips('操作完成', () => { console.log('回调函数'); });
+ * Toast('操作完成', () => { console.log('回调函数'); });
  */
-export function Tips(opt : TipsOptions, to_url ?: ToUrlOptions) : void {
+export const Toast = (opt : ToastOptions, router ?: RouterOptions) : void => {
   if (typeof opt === 'string') {
     opt = { title: opt }
   }
@@ -84,8 +84,8 @@ export function Tips(opt : TipsOptions, to_url ?: ToUrlOptions) : void {
   }
 
   // 处理页面跳转
-  if (to_url !== undefined) {
-    const executeNavigation = () => toUrl(to_url)
+  if (router !== undefined) {
+    const executeNavigation = () => Router(router)
 
     title ? setTimeout(executeNavigation, endtime) : executeNavigation()
   }

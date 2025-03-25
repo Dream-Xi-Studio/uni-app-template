@@ -1,7 +1,7 @@
 /**
  * 提示选项，可以是字符串或对象类型
  */
-export type TipsOptions = string | {
+export type ToastOptions = string | {
   /**
    * 提示标题
    */
