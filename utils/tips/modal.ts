@@ -1,86 +1,78 @@
 import { ModalOptions } from '@/types/index'
 
 /**
- * 显示一个模态对话框（Modal），适用于 `uni.showModal`
+ * 显示跨平台统一的模态对话框
  *
- * - 在小程序 (`MP`) 环境下，`confirmText` 和 `cancelText` 仅保留前 4 个字符
- * - 在 Android App (`APP-ANDROID`) 环境下，交换 `confirmText` 和 `cancelText` 及其颜色，以适应系统 UI 习惯
+ * 平台差异处理：
+ * - 小程序：限制按钮文本前4个字符
+ * - Android：交换按钮位置并保持语义一致性
+ * - iOS/H5：保持默认右确认布局
  *
- * @param {ModalOptions} [opt] 模态框选项，可包含 `title`、`content`、`confirmText`、`cancelText` 等
- * @returns {Promise<boolean>} 通过 Promise 返回 `true`（用户点击确认）或 `false`（用户点击取消）
- *
- * @example
- * // 基本使用：默认确认/取消按钮
- * Modal({ content: '确定要执行此操作吗？' })
- *   .then(confirmed => {
- *     if (confirmed) {
- *       console.log('用户点击了确认')
- *     } else {
- *       console.log('用户点击了取消')
- *     }
- *   })
+ * @param {ModalOptions} [opt] 弹窗配置选项
+ * @returns {Promise<boolean>} 始终返回基于"确认在右"逻辑的布尔值
  *
  * @example
- * // 自定义按钮文本
- * Modal({
- *   title: '警告',
- *   content: '此操作不可撤销！',
- *   confirmText: '继续',
- *   cancelText: '放弃'
- * }).then(confirmed => {
- *   if (confirmed) {
- *     console.log('用户选择继续')
- *   } else {
- *     console.log('用户选择放弃')
- *   }
- * })
- *
- * @example
- * // 处理成功/失败回调
- * Modal({
- *   title: '提示',
- *   content: '是否启用新功能？',
- *   success: (res) => console.log('Modal 显示成功:', res),
- *   fail: (err) => console.log('Modal 显示失败:', err),
- *   confirm: () => console.log('用户确认操作'),
- *   cancel: () => console.log('用户取消操作')
+ * // 跨平台统一调用
+ * Modal({ content: '操作确认' }).then(confirmed => {
+ *   confirmed // true=用户点击右侧主操作，false=左侧次要操作
  * })
  */
 export const Modal = (opt ?: ModalOptions) : Promise<boolean> => {
-  const { success, fail, confirm, cancel, ...options } = opt || {}
+  // 解构用户配置并分离回调方法
+  const {
+    success,
+    fail,
+    confirm: onConfirm,
+    cancel: onCancel,
+    ...userOptions
+  } = opt || {}
 
+  // 初始化弹窗配置（包含默认值）
   const modalOptions : UniApp.ShowModalOptions = {
     title: '温馨提示',
+    content: '',
     showCancel: true,
-    cancelText: '取消',
-    cancelColor: '#666666',
     confirmText: '确定',
     confirmColor: '#0072FF',
-    ...options
+    cancelText: '取消',
+    cancelColor: '#666666',
+    ...userOptions,
   }
 
+  /* 处理小程序平台限制 */
   // #ifdef MP
-  modalOptions.cancelText = modalOptions.cancelText?.slice(0, 4)
-  modalOptions.confirmText = modalOptions.confirmText?.slice(0, 4)
-    // #endif
+  const truncateText = (text ?: string) => text?.slice(0, 4) || ''
+  modalOptions.confirmText = truncateText(modalOptions.confirmText)
+  modalOptions.cancelText = truncateText(modalOptions.cancelText)
+  // #endif
 
-    // #ifdef APP-ANDROID
-    ;[modalOptions.confirmText, modalOptions.cancelText] = [modalOptions.cancelText, modalOptions.confirmText]
-    ;[modalOptions.confirmColor, modalOptions.cancelColor] = [modalOptions.cancelColor, modalOptions.confirmColor]
+  /* 处理Android平台布局适配 */
+  // #ifdef APP-ANDROID
+  if (modalOptions.showCancel) {
+    // 交换按钮文本及颜色（视觉层适配）
+    [modalOptions.confirmText, modalOptions.cancelText] = [modalOptions.cancelText, modalOptions.confirmText];
+    [modalOptions.confirmColor, modalOptions.cancelColor] = [modalOptions.cancelColor, modalOptions.confirmColor]
+  }
   // #endif
 
   return new Promise((resolve, reject) => {
     uni.showModal({
       ...modalOptions,
       success: (res : UniApp.ShowModalRes) => {
-        success?.(res)
-        if (res.confirm) {
-          confirm?.()
-          resolve(true)
-        } else {
-          cancel?.()
-          resolve(false)
+        /* Android结果映射 */
+        // #ifdef APP-ANDROID
+        if (modalOptions.showCancel) {
+          // 将物理位置差异转换为逻辑一致性
+          res.confirm = !res.confirm
         }
+        // #endif
+
+        // 执行用户回调
+        success?.(res)
+        res.confirm ? onConfirm?.() : onCancel?.()
+
+        // 统一解析为确认在右的语义
+        resolve(res.confirm)
       },
       fail: (err : any) => {
         fail?.(err)

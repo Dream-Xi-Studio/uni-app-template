@@ -1,17 +1,26 @@
 import { RouterOptions } from '@/types/index'
 
 /**
- * 导航到指定 URL，适用于 H5 和非 H5 环境
+ * 导航到指定 URL
  *
- * - 在 H5 环境下，使用 `location.href` 避免浏览器历史堆叠
- * - 在非 H5 环境（如小程序、App）下，使用 `uni.navigateTo` 进行跳转
+ * @param url 目标URL
  *
- * @param {string} url 目标 URL
+ * @example
+ * // 跳转到首页
+ * Push('/pages/home/index')
+ *
+ * // 带参数的跳转
+ * Push('/pages/detail?id=123')
  */
 export const Push = (url : string) : void => {
+  if (!url) return
+
   // #ifdef H5
-  // 避免浏览器历史堆叠
-  location.href = url
+  try {
+    window.location.href = url
+  } catch (e) {
+    console.error('Push navigation failed:', e)
+  }
   // #endif
 
   // #ifndef H5
@@ -20,16 +29,26 @@ export const Push = (url : string) : void => {
 }
 
 /**
- * 重定向到指定 URL，适用于 H5 和非 H5 环境
+ * 重定向到指定 URL（替换当前页面）
  *
- * - 在 H5 环境下，使用 `location.replace(url)`，不会在浏览器历史记录中保留当前页面
- * - 在非 H5 环境（如小程序、App）下，使用 `uni.redirectTo` 进行跳转，替换当前页面
+ * @param url 目标URL
  *
- * @param {string} url 目标 URL
+ * @example
+ * // 登录后重定向到首页
+ * Replace('/pages/home')
+ *
+ * // 替换当前页面为详情页
+ * Replace('/pages/detail?id=456')
  */
 export const Replace = (url : string) : void => {
+  if (!url) return
+
   // #ifdef H5
-  location.replace(url)
+  try {
+    window.location.replace(url)
+  } catch (e) {
+    console.error('Replace navigation failed:', e)
+  }
   // #endif
 
   // #ifndef H5
@@ -38,19 +57,33 @@ export const Replace = (url : string) : void => {
 }
 
 /**
- * 重新启动并跳转到指定 URL，适用于 H5 和非 H5 环境
+ * 重启应用并跳转到指定 URL
  *
- * - 在 H5 环境下，使用 `location.replace(url)` 跳转并替换当前页面，同时通过 `history.pushState` 更新浏览器历史记录，避免用户点击返回时回到当前页面
- * - 在非 H5 环境（如小程序、App）下，使用 `uni.reLaunch` 跳转，重置当前页面栈
+ * @param url 目标URL
  *
- * @param {string} url 目标 URL
+ * @example
+ * // 登录过期后重启到登录页
+ * Relaunch('/pages/login')
+ *
+ * // 切换用户身份后重启应用
+ * Relaunch('/pages/home?role=admin')
  */
 export const Relaunch = (url : string) : void => {
+  if (!url) return
+
   // #ifdef H5
-  location.replace(url)
-  setTimeout(() => {
-    history.pushState(null, '', url)
-  }, 50)
+  try {
+    const newWindow = window.open(url, '_blank')
+    if (newWindow) {
+      newWindow.opener = null
+      window.close()
+    } else {
+      window.location.href = url
+    }
+  } catch (e) {
+    console.error('Relaunch navigation failed:', e)
+    window.location.href = url
+  }
   // #endif
 
   // #ifndef H5
@@ -59,40 +92,71 @@ export const Relaunch = (url : string) : void => {
 }
 
 /**
- * 返回上一页面，适用于 H5 和非 H5 环境
+ * 返回上一页或多页
  *
- * - 在 H5 环境下，使用 `history.go(-delta)` 返回历史记录中的页面，`delta` 为返回的页面数
- * - 在非 H5 环境（如小程序、App）下，使用 `uni.navigateBack` 返回指定页面数
+ * @param delta 返回的页面数，默认为1
  *
- * @param {number|string} delta 返回的页面数。可以是数字或数字字符串，默认为 1（返回上一页面）
+ * @example
+ * // 返回上一页
+ * Back()
+ *
+ * // 返回前两页
+ * Back(2)
+ *
+ * // 从字符串参数返回
+ * Back('1')
  */
-export const Back = (delta : number | string) : void => {
-  delta = Number.isNaN(Number(delta)) ? 1 : parseInt(delta as string, 10)
+export const Back = (delta : number | string = 1) : void => {
+  let deltaNum = Number(delta)
+
+  if (isNaN(deltaNum)) {
+    deltaNum = 1
+  } else if (deltaNum <= 0) {
+    deltaNum = 1
+  }
 
   // #ifdef H5
-  history.go(-delta)
+  try {
+    window.history.go(-deltaNum)
+  } catch (e) {
+    console.error('Back navigation failed:', e)
+  }
   // #endif
 
   // #ifndef H5
-  uni.navigateBack({ delta })
+  uni.navigateBack({ delta: deltaNum })
   // #endif
 }
 
 /**
- * 根据提供的参数跳转到指定 URL 或执行相应操作
- * 支持字符串、对象或函数类型的 `router` 参数
+ * 统一路由方法
  *
- * - 如果 `router` 是字符串，使用 `navigate` 进行跳转
- * - 如果 `router` 是对象，支持以下选项：
- *   - `tab`: 控制跳转方式，值可以是 1 到 5，决定使用不同的跳转方法（如 `uni.switchTab`、`navigate`、`back`、`relaunch`、`redirect`）
- *   - `url`: 目标 URL，必须是有效的 URL 字符串
- * - 如果 `router` 是函数，则直接调用该函数
+ * @param router 路由配置
  *
- * @param {RouterOptions} router 跳转选项，可以是字符串、对象或函数
+ * @example
+ * // 字符串形式跳转
+ * Router('/pages/home')
+ *
+ * // 对象形式跳转 - 切换tab页
+ * Router({ tab: 1, url: '/pages/home' })
+ *
+ * // 对象形式跳转 - 普通跳转
+ * Router({ tab: 2, url: '/pages/detail' })
+ *
+ * // 对象形式跳转 - 返回
+ * Router({ tab: 3, url: '1' }) // 返回1页
+ *
+ * // 函数形式执行
+ * Router(() => {
+ *   console.log('执行自定义路由逻辑')
+ *   // 可以在这里添加自定义跳转逻辑
+ * })
  */
 export const Router = (router : RouterOptions) : void | Promise<any> => {
+  if (!router) return
+
   if (typeof router === 'object') {
-    const { tab = 1, url = '' } = router
+    const { tab = 2, url = '' } = router
     if (!url) return
 
     switch (tab) {
@@ -101,9 +165,14 @@ export const Router = (router : RouterOptions) : void | Promise<any> => {
       case 3: return Back(url)
       case 4: return Relaunch(url)
       case 5: return Replace(url)
+      default: return Push(url)
     }
   } else if (typeof router === 'function') {
-    router()
+    try {
+      return router()
+    } catch (e) {
+      console.error('Router function execution failed:', e)
+    }
   } else if (typeof router === 'string' && router.trim()) {
     Push(router)
   }

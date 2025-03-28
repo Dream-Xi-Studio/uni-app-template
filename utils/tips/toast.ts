@@ -1,92 +1,82 @@
 import { Router } from '@/utils/index'
-import { ToastOptions, RouterOptions } from '@/types/index'
+import { RouterOptions } from '@/types/index'
 
 /**
- * 显示一个提示消息，并根据配置进行页面跳转
+ * 显示Toast提示消息，可选择在提示消失后执行页面跳转
  *
- * @param {ToastOptions} opt - 提示的配置或提示文本
- * @param {RouterOptions} [router] - 页面跳转配置或跳转目标，或一个回调函数
+ * @param opt - Toast内容，可以是字符串或配置对象
+ *              当为字符串时，将作为Toast的标题内容
+ *              当为对象时，需符合UniApp.ShowToastOptions规范
  *
- * @example
- * // 显示一个成功的提示
- * Toast({ title: '操作成功', icon: 'success' });
- *
- * @example
- * // 提示后跳转到 TabBar 页面
- * Toast({ title: '跳转中...' }, { tab: 1, url: '/pages/index/index' });
+ * @param router - 可选参数，配置Toast消失后的页面跳转行为
+ *                 传入RouterOptions对象指定跳转目标
  *
  * @example
- * // 提示后执行回调
- * Toast('操作完成', () => { console.log('回调函数'); });
+ * // 基本用法
+ * Toast('操作成功')
+ *
+ * @example
+ * // 带配置项
+ * Toast({
+ *   title: '加载中...',
+ *   icon: 'loading',
+ *   duration: 1500
+ * })
+ *
+ * @example
+ * // Toast后跳转页面
+ * Toast('提交成功', {
+ *   path: '/pages/success',
+ *   type: 'redirectTo'
+ * })
  */
-export const Toast = (opt : ToastOptions, router ?: RouterOptions) : void => {
-  if (typeof opt === 'string') {
-    opt = { title: opt }
-  }
+export const Toast = (opt : string | UniApp.ShowToastOptions, router ?: RouterOptions) : void => {
+  // 参数标准化处理
+  const options = typeof opt === 'string' ? { title: opt } : opt
 
-  const title = opt.title || ''
-  /**
-   * 提示图标，默认值为 none
-   *
-   * @param {String} title
-   */
-  let icon = opt.icon || 'none'
-  /**
-   * 提示显示时长（毫秒），默认值为 2000
-   *
-   * @param {Number} endtime
-   */
-  const endtime = opt.endtime ?? 2000
-  const success = opt.success
-  /**
-   * 提示框位置，默认位置为 bottom
-   *
-   * @param {String} title
-   */
-  const position = opt.position || 'bottom'
+  // 合并默认配置（符合uni-app规范）
+  const {
+    title = '',
+    icon = 'none',
+    duration = 2000,
+    position = 'bottom',
+    mask = false,
+    image = '',
+    success,
+    fail,
+    complete
+  } = options
 
-  // 处理 Toast 提示
-  if (title) {
-    // #ifdef MP-WEIXIN
-    if (icon === 'loading') {
-      uni.showLoading({ title })
-    } else {
+  // 验证并显示Toast
+  if (title && title.length > 0) {
+    try {
       uni.showToast({
         title,
-        icon,
-        duration: endtime,
+        icon: image ? 'none' : icon, // 如果有自定义图片则强制设为none
+        image,
+        duration,
         position,
-        success
+        mask,
+        success(result : any) {
+          success?.(result)
+        },
+        fail(err) {
+          console.error('[Toast] 显示失败:', err)
+          fail?.(err)
+        },
+        complete(result : any) {
+          complete?.(result)
+        }
       })
+    } catch (err) {
+      console.error('[Toast] 调用异常:', err)
     }
-    // #endif
-
-    // #ifdef H5
-    // H5 端不传 success，避免无效参数
-    uni.showToast({
-      title,
-      icon,
-      duration: endtime,
-      position
-    })
-    // #endif
-
-    // #ifndef H5 || MP-WEIXIN
-    // 其他端正常显示
-    uni.showToast({
-      title,
-      icon,
-      duration: endtime,
-      position,
-      success
-    })
-    // #endif
   }
 
   // 处理页面跳转
   if (router !== undefined) {
     const executeNavigation = () => Router(router)
 
-    title ? setTimeout(executeNavigation, endtime) : executeNavigation()
+    title ? setTimeout(executeNavigation, duration) : executeNavigation()
   }
 }

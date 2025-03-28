@@ -2,11 +2,27 @@ import { ref, onUnmounted } from 'vue'
 import { UseIntervalReturn } from '@/types/index'
 
 /**
- * 自定义 Vue 3 Hook，用于管理 `setInterval`
+ * 自定义 Vue 3 Hook，用于管理 setInterval 定时器
  *
- * @param {() => void} callback - 需要在每个间隔执行的回调函数
- * @param {Number} delay - 时间间隔（毫秒）
- * @returns {UseIntervalReturn} 包含 `start`、`stop` 方法和 `isActive` 状态的对象
+ * @param callback - 需要在每个时间间隔执行的回调函数
+ * @param delay - 间隔时间（单位：毫秒）
+ *
+ * @returns 返回包含控制方法和状态的对象 { start, stop, isActive }
+ *
+ * @example
+ * // 基本用法
+ * const { start, stop, isActive } = useInterval(() => {
+ *   console.log('每秒执行一次')
+ * }, 1000)
+ *
+ * // 启动定时器
+ * start()
+ *
+ * // 停止定时器
+ * stop()
+ *
+ * // 检查定时器状态
+ * console.log(isActive.value) // true/false
  */
 export function useInterval(callback : () => void, delay : number) : UseIntervalReturn {
   /**
@@ -19,7 +35,9 @@ export function useInterval(callback : () => void, delay : number) : UseInterval
   const isActive = ref<boolean>(false)
 
   /**
-   * 启动定时器（如果未运行）
+   * 启动定时器
+   * - 如果定时器未运行则创建新定时器
+   * - 自动更新isActive状态
    */
   const start = () : void => {
     if (intervalId.value === null) {
@@ -29,7 +47,10 @@ export function useInterval(callback : () => void, delay : number) : UseInterval
   }
 
   /**
-   * 停止定时器（如果正在运行）
+   * 停止定时器
+   * - 如果定时器正在运行则清除定时器
+   * - 自动更新isActive状态
+   * - 自动清理定时器ID引用
    */
   const stop = () : void => {
     if (intervalId.value !== null) {
@@ -39,10 +60,10 @@ export function useInterval(callback : () => void, delay : number) : UseInterval
     }
   }
 
-  /**
-   * 组件卸载时自动清除定时器
-   */
-  onUnmounted(stop)
+  // 组件卸载时自动停止定时器
+  onUnmounted(() => {
+    stop()
+  })
 
   return { start, stop, isActive }
 }
