@@ -1,5 +1,5 @@
-import { Router } from '@/utils/index'
-import { RouterOptions } from '@/types/index'
+import { Router } from '@/utils'
+import { ToastOptions, RouterOptions } from '@/types'
 
 /**
  * 显示Toast提示消息，可选择在提示消失后执行页面跳转
@@ -30,7 +30,7 @@ import { RouterOptions } from '@/types/index'
  *   type: 'redirectTo'
  * })
  */
-export const Toast = (opt : string | UniApp.ShowToastOptions, router ?: RouterOptions) : void => {
+export function Toast(opt : ToastOptions, router ?: RouterOptions) : void {
   // 参数标准化处理
   const options = typeof opt === 'string' ? { title: opt } : opt
 
@@ -60,7 +60,7 @@ export const Toast = (opt : string | UniApp.ShowToastOptions, router ?: RouterOp
         success(result : any) {
           success?.(result)
         },
-        fail(err) {
+        fail(err : UniApp.UniError) {
           console.error('[Toast] 显示失败:', err)
           fail?.(err)
         },

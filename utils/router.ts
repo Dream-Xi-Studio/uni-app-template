@@ -1,4 +1,4 @@
-import { RouterOptions } from '@/types/index'
+import { RouterOptions } from '@/types'
 
 /**
  * 导航到指定 URL
@@ -12,7 +12,7 @@ import { RouterOptions } from '@/types/index'
  * // 带参数的跳转
  * Push('/pages/detail?id=123')
  */
-export const Push = (url : string) : void => {
+export function Push(url : string) : void {
   if (!url) return
 
   // #ifdef H5
@@ -40,7 +40,7 @@ export const Push = (url : string) : void => {
  * // 替换当前页面为详情页
  * Replace('/pages/detail?id=456')
  */
-export const Replace = (url : string) : void => {
+export function Replace(url : string) : void {
   if (!url) return
 
   // #ifdef H5
@@ -68,7 +68,7 @@ export const Replace = (url : string) : void => {
  * // 切换用户身份后重启应用
  * Relaunch('/pages/home?role=admin')
  */
-export const Relaunch = (url : string) : void => {
+export function Relaunch(url : string) : void {
   if (!url) return
 
   // #ifdef H5
@@ -106,7 +106,7 @@ export const Relaunch = (url : string) : void => {
  * // 从字符串参数返回
  * Back('1')
  */
-export const Back = (delta : number | string = 1) : void => {
+export function Back(delta : number | string = 1) : void {
   let deltaNum = Number(delta)
 
   if (isNaN(deltaNum)) {
@@ -152,7 +152,7 @@ export const Back = (delta : number | string = 1) : void => {
  *   // 可以在这里添加自定义跳转逻辑
  * })
  */
-export const Router = (router : RouterOptions) : void | Promise<any> => {
+export function Router(router : RouterOptions) : void | Promise<any> {
   if (!router) return
 
   if (typeof router === 'object') {

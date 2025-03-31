@@ -1,4 +1,4 @@
-import { ModalOptions } from '@/types/index'
+import { ModalOptions } from '@/types'
 
 /**
  * 显示跨平台统一的模态对话框
@@ -13,19 +13,28 @@ import { ModalOptions } from '@/types/index'
  *
  * @example
  * // 跨平台统一调用
+ * Modal('操作确认').then(confirmed => {
+ *   confirmed // true=用户点击右侧主操作，false=左侧次要操作
+ * })
+
+ * @example
+ * // 跨平台统一调用
  * Modal({ content: '操作确认' }).then(confirmed => {
  *   confirmed // true=用户点击右侧主操作，false=左侧次要操作
  * })
  */
-export const Modal = (opt ?: ModalOptions) : Promise<boolean> => {
-  // 解构用户配置并分离回调方法
+export function Modal(opt ?: ModalOptions) : Promise<boolean> {
+  // 参数标准化处理
+  const options = typeof opt === 'string' ? { content: opt } : opt
+
+  // 合并默认配置
   const {
     success,
     fail,
     confirm: onConfirm,
     cancel: onCancel,
     ...userOptions
-  } = opt || {}
+  } = options
 
   // 初始化弹窗配置（包含默认值）
   const modalOptions : UniApp.ShowModalOptions = {
@@ -48,7 +57,10 @@ export const Modal = (opt ?: ModalOptions) : Promise<boolean> => {
 
   /* 处理Android平台布局适配 */
   // #ifdef APP-ANDROID
-  if (modalOptions.showCancel) {
+  const shouldSwapButtons = modalOptions.showCancel &&
+    !modalOptions.cancelText?.startsWith(modalOptions.confirmText || '')
+
+  if (shouldSwapButtons) {
     // 交换按钮文本及颜色（视觉层适配）
     [modalOptions.confirmText, modalOptions.cancelText] = [modalOptions.cancelText, modalOptions.confirmText];
     [modalOptions.confirmColor, modalOptions.cancelColor] = [modalOptions.cancelColor, modalOptions.confirmColor]
@@ -74,7 +86,7 @@ export const Modal = (opt ?: ModalOptions) : Promise<boolean> => {
         // 统一解析为确认在右的语义
         resolve(res.confirm)
       },
-      fail: (err : any) => {
+      fail: (err : UniApp.UniError) => {
         fail?.(err)
         reject(err)
       }
