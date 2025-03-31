@@ -1,5 +1,5 @@
-import { Router } from '@/utils'
-import { ToastOptions, RouterOptions } from '@/types'
+import { Router } from '@/packages/utils'
+import { ToastOptions, RouterOptions } from '@/packages/types'
 
 /**
  * 显示Toast提示消息，可选择在提示消失后执行页面跳转

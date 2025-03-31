@@ -1,7 +1,7 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
-import { ProviderOptions, ProviderOptionsKeys } from '@/types/index'
-// import Tips from '@/utils/tips'
+import { ProviderOptions, ProviderOptionsKeys } from '@/packages/types'
+import { Toast } from '@/packages/utils'
 
 export const useAppStore = defineStore('app', () => {
   // #ifndef WEB
@@ -22,8 +22,8 @@ export const useAppStore = defineStore('app', () => {
           [service]: providers[0]
         })
       },
-      fail: (err) => {
-        // Tips(err.errMsg)
+      fail: (err : UniApp.UniError) => {
+        Toast(err.errMsg)
       }
     })
   }

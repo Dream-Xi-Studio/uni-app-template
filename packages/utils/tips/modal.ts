@@ -1,4 +1,4 @@
-import { ModalOptions } from '@/types'
+import { ModalOptions } from '@/packages/types'
 
 /**
  * 显示跨平台统一的模态对话框

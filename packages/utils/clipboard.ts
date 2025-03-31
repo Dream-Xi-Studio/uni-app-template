@@ -1,5 +1,5 @@
-import { Toast } from '@/utils'
-import { CopyOptions } from '@/types'
+import { Toast } from '@/packages/utils'
+import { CopyOptions } from '@/packages/types'
 
 /**
  * 剪贴板复制工具函数

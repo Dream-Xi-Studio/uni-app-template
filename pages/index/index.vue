@@ -13,7 +13,7 @@
   const title = ref('Hello')
 </script>
 
-<style>
+<style lang="scss">
   .content {
     display: flex;
     flex-direction: column;
@@ -31,8 +31,7 @@
   }
 
   .text-area {
-    display: flex;
-    justify-content: center;
+    @include flex(center);
   }
 
   .title {
