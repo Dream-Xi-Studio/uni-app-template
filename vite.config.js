@@ -2,16 +2,22 @@ import {
   defineConfig
 } from 'vite'
 import uni from '@dcloudio/vite-plugin-uni'
-// import inject from '@rollup/plugin-inject'
-// import utils from '@/packages/utils'
+
+import resolve from '@rollup/plugin-node-resolve'
+import inject from '@rollup/plugin-inject'
+
+import path from 'path'
 
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
     uni(),
-    // inject({
-    //   Utils: utils
-    // })
+
+    resolve(),
+
+    inject({
+      $utils: path.resolve(__dirname, './packages/utils')
+    })
   ],
 
   css: {

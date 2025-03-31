@@ -1,4 +1,4 @@
-import { RouterOptions } from '@/packages/types'
+import type { RouterOptions } from '@/packages/types'
 
 /**
  * 导航到指定 URL
