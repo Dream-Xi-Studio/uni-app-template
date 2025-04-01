@@ -1,5 +1,5 @@
 import { ref, onUnmounted } from 'vue'
-import { UseIntervalReturn } from '@/packages/types'
+import type { UseIntervalReturn } from '@/packages/types'
 
 /**
  * 自定义 Vue 3 Hook，用于管理 setInterval 定时器

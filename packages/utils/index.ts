@@ -1,3 +1,3 @@
 export * from './tips/index'
-export * from './clipboard'
-export * from './router'
+export * from './clipboard/index'
+export * from './router/index'

@@ -1,4 +1,4 @@
-import { Toast } from '@/packages/utils'
+import { Toast } from '../tips/toast'
 import type { CopyOptions } from '@/packages/types'
 
 /**
@@ -54,7 +54,14 @@ export function Copy(opt : CopyOptions) : Promise<boolean> {
           resolve(true)
         }
       },
-      fail: (err) => {
+      fail: (err : UniApp.UniError) => {
+        // #ifdef MP-WEIXIN
+        if (err.errMsg == 'setClipboardData:fail api scope is not declared in the privacy agreement') {
+          Toast('必须通过小程序后台配置用户隐私保护指引并审核通过后方可使用该API')
+          reject(err)
+        }
+        // #endif
+
         try {
           options.showToast && Toast(options.failMessage || '复制失败')
 

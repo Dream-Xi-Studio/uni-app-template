@@ -1,7 +1,7 @@
 /**
  * `Modal` 函数的对象选项，继承自 `UniApp.ShowModalOptions`
  */
-interface Options extends UniApp.ShowModalOptions {
+interface ShowModalOptions extends UniApp.ShowModalOptions {
   /**
    * 用户点击“确定”按钮时触发的回调
    */
@@ -16,4 +16,9 @@ interface Options extends UniApp.ShowModalOptions {
 /**
  * `Modal` 函数的选项
  */
-export type ModalOptions = string | Options
+export type ModalOptions = string | ShowModalOptions
+
+/**
+ * `Toast` 函数的选项
+ */
+export type ToastOptions = string | UniApp.ShowToastOptions

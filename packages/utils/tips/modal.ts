@@ -23,7 +23,7 @@ import type { ModalOptions } from '@/packages/types'
  *   confirmed // true=用户点击右侧主操作，false=左侧次要操作
  * })
  */
-export function Modal(opt ?: ModalOptions) : Promise<boolean> {
+export function Modal(opt : ModalOptions) : Promise<boolean> {
   // 参数标准化处理
   const options = typeof opt === 'string' ? { content: opt } : opt
 
