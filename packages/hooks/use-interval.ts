@@ -1,69 +1,64 @@
 import { ref, onUnmounted } from 'vue'
-import type { UseIntervalReturn } from '@/packages/types'
+import type { IntervalCallback, IntervalControls, IntervalOptions } from '@/packages/types'
 
 /**
- * 自定义 Vue 3 Hook，用于管理 setInterval 定时器
+ * 一个用于管理 setInterval 定时器的 Vue 3 组合式 API Hook。
+ * 回调函数会接收定时器 ID 作为参数。
+ * 组件卸载时会自动清除定时器。
  *
- * @param callback - 需要在每个时间间隔执行的回调函数
- * @param delay - 间隔时间（单位：毫秒）
- *
- * @returns 返回包含控制方法和状态的对象 { start, stop, isActive }
+ * @param callback - 每次定时器触发时执行的回调函数，接收定时器 ID。
+ * @param options - 定时器的配置选项。
+ * @returns 包含定时器 ID（ref 对象）、启动和清除方法的对象。
  *
  * @example
- * // 基本用法
- * const { start, stop, isActive } = useInterval(() => {
- *   console.log('每秒执行一次')
- * }, 1000)
+ * ```typescript
+ * import { defineComponent } from 'vue'
+ * import { useInterval } from './useTimer'
  *
- * // 启动定时器
- * start()
+ * export default defineComponent({
+ *   setup() {
+ *     const { intervalId, start, clear } = useInterval(
+ *       (id) => {
+ *         console.log('定时器触发，ID:', id)
+ *       },
+ *       { delay: 2000, immediate: true }
+ *     )
  *
- * // 停止定时器
- * stop()
+ *     start() // 启动定时器
+ *     console.log('定时器 ID:', intervalId.value) // 访问定时器 ID
  *
- * // 检查定时器状态
- * console.log(isActive.value) // true/false
+ *     // clear() // 可选择清除定时器
+ *   }
+ * })
+ * ```
  */
-export function useInterval(callback : () => void, delay : number) : UseIntervalReturn {
-  /**
-   * 定时器的 ID
-   */
+export function useInterval(callback : IntervalCallback, options : IntervalOptions = {}
+) : IntervalControls {
+  const { delay = 1000, immediate = false } = options
   const intervalId = ref<number | null>(null)
-  /**
-   * 定时器的状态
-   */
-  const isActive = ref<boolean>(false)
 
-  /**
-   * 启动定时器
-   * - 如果定时器未运行则创建新定时器
-   * - 自动更新isActive状态
-   */
-  const start = () : void => {
-    if (intervalId.value === null) {
-      intervalId.value = setInterval(callback, delay) as unknown as number
-      isActive.value = true
+  const start = () => {
+    clear()
+    if (immediate) {
+      callback(intervalId.value)
     }
+    intervalId.value = setInterval(() => {
+      callback(intervalId.value)
+    }, delay)
   }
 
-  /**
-   * 停止定时器
-   * - 如果定时器正在运行则清除定时器
-   * - 自动更新isActive状态
-   * - 自动清理定时器ID引用
-   */
-  const stop = () : void => {
+  const clear = () => {
     if (intervalId.value !== null) {
       clearInterval(intervalId.value)
       intervalId.value = null
-      isActive.value = false
     }
   }
 
-  // 组件卸载时自动停止定时器
-  onUnmounted(() => {
-    stop()
-  })
+  onUnmounted(clear)
 
-  return { start, stop, isActive }
+  return {
+    intervalId,
+    start,
+    clear
+  }
 }

@@ -1,6 +1,6 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
-import { ProviderOptions, ProviderOptionsKeys } from '@/packages/types'
+import type { ProviderOptions, ProviderOptionsKeys } from '@/packages/types'
 import { Toast } from '@/packages/utils'
 
 export const useAppStore = defineStore('app', () => {

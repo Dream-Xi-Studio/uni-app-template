@@ -6,17 +6,17 @@ export const useSystemStore = defineStore('system', () => {
   /**
    * 胶囊信息
    */
-  const capsule = ref<UniApp.GetMenuButtonBoundingClientRectRes>(null)
+  const capsule = ref<UniApp.GetMenuButtonBoundingClientRectRes>()
   // #endif
 
   /**
    * 竖屏正方向下的安全区域插入位置
    */
-  const safeAreaInsets = ref<UniApp.SafeAreaInsets>(null)
+  const safeAreaInsets = ref<UniApp.SafeAreaInsets>()
   /**
    * 状态栏高度
    */
-  const statusBarHeight = ref<number>(0)
+  const statusBarHeight = ref<number>()
   /**
    * 高度
    */
@@ -30,12 +30,12 @@ export const useSystemStore = defineStore('system', () => {
       success: (e : UniApp.GetSystemInfoResult) => {
         safeAreaInsets.value = e.safeAreaInsets
         // 状态栏高度
-        statusBarHeight.value = e.statusBarHeight
+        statusBarHeight.value = e.statusBarHeight || 0
 
         // #ifndef APP || WEB || MP-LARK || MP-HARMONY
         // 获取右上角胶囊的信息
         capsule.value = uni.getMenuButtonBoundingClientRect()
-        height.value = capsule.value.height + (capsule.value.top - statusBarHeight.value) * 2
+        height.value = capsule.value?.height + (capsule.value?.top - statusBarHeight.value) * 2
         // #endif
 
         // #ifdef APP || WEB || MP-LARK || MP-HARMONY
